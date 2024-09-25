@@ -8,7 +8,15 @@ ENV PYTHONUNBUFFERED 1
 # Set the working directory
 WORKDIR /app
 
-# Install dependencies
+# Install system dependencies required for Python packages
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    default-libmysqlclient-dev \
+    build-essential \
+    && apt-get clean
+
+# Install Python dependencies
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
