@@ -1,33 +1,31 @@
-version: '3'
+version: "3.8"
 
 services:
-  db:
-    image: mysql:8.0
-    restart: always
-    environment:
-      MYSQL_DATABASE: mydatabase
-      MYSQL_USER: myuser
-      MYSQL_PASSWORD: mypassword
-      MYSQL_ROOT_PASSWORD: rootpassword
-    volumes:
-      - db_data:/var/lib/mysql
-
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
+  nginx:
+    build: ./nginx
+    image: nginx
+    container_name: "nginx_cont"
     ports:
-      - "8000:8000"
+      - 80:80
+    depends_on:
+      - django_app
+  django_app:
+    image: django_app
+    build:
+      context: ./django
+    container_name: "django_cont"
+    ports:
+      - 8001:8001
+    command: gunicorn core.wsgi --bind 0.0.0.0:8001
+    env_file:
+      - "./django/.env"
     depends_on:
       - db
+  db:
+    image: mysql
+    container_name: "db_cont"
     environment:
-      MYSQL_DATABASE: mydatabase
-      MYSQL_USER: myuser
-      MYSQL_PASSWORD: mypassword
-      MYSQL_ROOT_PASSWORD: rootpassword
-      DATABASE_HOST: db
-      DATABASE_PORT: 3306
-
-volumes:
-  db_data:
+      - MYSQL_ROOT_PASSWORD=anand
+      - MYSQL_DATABASE=test_db
+    volumes:
+      - ./data/mysql/db:/var/lib/mysql
